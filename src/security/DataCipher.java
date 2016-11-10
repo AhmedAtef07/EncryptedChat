@@ -1,9 +1,10 @@
 package security;
 
-import javax.crypto.Cipher;
 import java.security.GeneralSecurityException;
 import java.security.Key;
 import java.util.Objects;
+
+import javax.crypto.Cipher;
 
 /**
  * DataCipher encryption and decryption.
@@ -14,7 +15,7 @@ public class DataCipher {
 
     /**
      * Instantiate DataCipher object.
-     * @param encryptionAlgorithm
+     *
      * @throws NullPointerException If encryptionAlgorithm is null.
      */
     public DataCipher(final EncryptionAlgorithm encryptionAlgorithm) {
@@ -23,8 +24,7 @@ public class DataCipher {
 
     /**
      * Encrypts the given data using the given key.
-     * @param data
-     * @param key
+     *
      * @return The encrypted data.
      * @throws IllegalArgumentException If general security exception thrown.
      */
@@ -41,8 +41,7 @@ public class DataCipher {
 
     /**
      * Decrypts the given data using the given key.
-     * @param data
-     * @param key
+     *
      * @return The decrypted data.
      * @throws IllegalArgumentException If general security exception thrown.
      */

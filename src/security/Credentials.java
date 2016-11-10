@@ -13,16 +13,15 @@ import java.util.Objects;
 public class Credentials {
 
     private final KeyPair keyPair;
-    private final EncryptionAlgorithm encryptionAlgorithm;
 
     /**
      * Generate public and private keys using the specified algorithm.
-     * @param encryptionAlgorithm
-     * @throws NullPointerException If encryptionAlgorithm is null.
-     * @throws IllegalArgumentException when failed to create the keys.
+     *
+     * @throws NullPointerException     If encryptionAlgorithm is null.
+     * @throws IllegalArgumentException When failed to create the keys.
      */
     public Credentials(final EncryptionAlgorithm encryptionAlgorithm) {
-        this.encryptionAlgorithm = Objects.requireNonNull(encryptionAlgorithm);
+        Objects.requireNonNull(encryptionAlgorithm);
         try {
             keyPair = KeyPairGenerator.getInstance(encryptionAlgorithm.toString()).generateKeyPair();
         } catch (final NoSuchAlgorithmException e) {
@@ -31,14 +30,14 @@ public class Credentials {
     }
 
     /**
-     * @return the public key generated.
+     * @return The public key generated.
      */
     public PublicKey getPublicKey() {
         return keyPair.getPublic();
     }
 
     /**
-     * @return the private key generated.
+     * @return The private key generated.
      */
     public PrivateKey getPrivateKey() {
         return keyPair.getPrivate();
