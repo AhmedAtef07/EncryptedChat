@@ -4,6 +4,18 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.security.Key;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
+import java.security.spec.EncodedKeySpec;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
+
+import security.EncryptionAlgorithm;
+
+import static java.nio.ByteBuffer.wrap;
+
 
 public class Message {
 
@@ -16,16 +28,21 @@ public class Message {
         encode(type, content);
     }
 
-    public Message(final byte[] raw) {
+    public Message(final byte[] raw) throws InvalidKeySpecException, NoSuchAlgorithmException {
         this.raw = raw;
         decode(raw);
     }
 
-    public Message(final DataInputStream dataInputStream) throws IOException {
+    public Message(final DataInputStream dataInputStream) throws IOException,
+            InvalidKeySpecException, NoSuchAlgorithmException {
         read(dataInputStream);
         encode(type, body);
     }
 
+    /**
+     * Message is composed of header and body.
+     * Message header is composed of 4 bytes: Message length (2 bytes), Message Type (2 bytes).
+     */
     private void encode(final MessageType messageType, final Object object) {
         short length = 4;
         byte[] data = null;
@@ -42,6 +59,12 @@ public class Message {
             byteBuffer.putShort(signal.getValue());
             data = byteBuffer.array();
         }
+        if (messageType.getTypeClass().equals(Key.class)) {
+            Key key = Key.class.cast(object);
+            byte[] keyData = key.getEncoded();
+            length += keyData.length;
+            data = keyData;
+        }
 
         ByteBuffer byteBuffer = ByteBuffer.allocate(length);
         byteBuffer.putShort(length);
@@ -52,21 +75,29 @@ public class Message {
         this.length = length;
     }
 
-    private void decode(final byte[] raw) {
-        short length = ByteBuffer.wrap(raw, 0, 2).getShort();
-        MessageType messageType = MessageType.getMessageType(ByteBuffer.wrap(raw, 2, 2).getShort());
+    private void decode(final byte[] raw) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        short length = wrap(raw, 0, 2).getShort();
+        MessageType messageType = MessageType.getMessageType(wrap(raw, 2, 2).getShort());
 
         if (messageType.getTypeClass().equals(String.class)) {
             String content = new String(raw, 4, length - 4);
             setLocalVariables(length, messageType, content);
         }
         if (messageType.getTypeClass().equals(Signal.class)) {
-            Signal signal = Signal.getSignal(ByteBuffer.wrap(raw, 4, 2).getShort());
+            Signal signal = Signal.getSignal(wrap(raw, 4, 2).getShort());
             setLocalVariables(length, messageType, signal);
+        }
+        if (messageType.getTypeClass().equals(Key.class)) {
+            byte[] keyData = wrap(raw, 4, length - 4).array();
+            EncodedKeySpec encodedKeySpec = new X509EncodedKeySpec(keyData);
+            PublicKey publicKey = KeyFactory.getInstance(EncryptionAlgorithm.RSA.toString())
+                    .generatePublic(encodedKeySpec);
+            setLocalVariables(length, messageType, publicKey);
         }
     }
 
-    private void read(final DataInputStream dataInputStream) throws IOException {
+    private void read(final DataInputStream dataInputStream) throws IOException,
+            NoSuchAlgorithmException, InvalidKeySpecException {
         byte[] msg = new byte[length];
         dataInputStream.readFully(msg);
 
@@ -80,8 +111,14 @@ public class Message {
             setLocalVariables(length, messageType, content);
         }
         if (messageType.getTypeClass().equals(Signal.class)) {
-            Signal signal = Signal.getSignal(ByteBuffer.wrap(byteContent).getShort());
+            Signal signal = Signal.getSignal(wrap(byteContent).getShort());
             setLocalVariables(length, messageType, signal);
+        }
+        if (messageType.getTypeClass().equals(Key.class)) {
+            EncodedKeySpec encodedKeySpec = new X509EncodedKeySpec(byteContent);
+            PublicKey publicKey = KeyFactory.getInstance(EncryptionAlgorithm.RSA.toString())
+                    .generatePublic(encodedKeySpec);
+            setLocalVariables(length, messageType, publicKey);
         }
     }
 

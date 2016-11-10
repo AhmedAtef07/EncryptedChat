@@ -1,12 +1,15 @@
 package network;
 
+import java.security.Key;
+
 public enum MessageType {
 
     SIGNAL(0, Signal.class),
-    TEXT(1, String.class);
+    TEXT(1, String.class),
+    KEY(2, Key.class);
 
-    private Class typeClass;
-    private short value;
+    private final Class typeClass;
+    private final short value;
 
     MessageType(final int value, final Class typeClass) {
         this.value = (short) value;
