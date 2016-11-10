@@ -1,6 +1,6 @@
 ## Encrypted Chat
 
-Chat server and client. Applying different encryption algorithm.
+Chat server and client. Applying different encryption algorithms.
 
 ## Coding Preference
 
@@ -21,3 +21,9 @@ Chat server and client. Applying different encryption algorithm.
 * Receives a message, string content, string which client sent that, (time stamp, no later we add that)
 
 ### Encryption
+
+* The server knows the public key of each client.
+* Any client will encrypt the message using server's public key.
+* Server will decrypt the message received from a client and send it to the other clients.
+* Each client will receive the message encrypted with his own public key.
+* Each client will decrypt the message using his own private key.
