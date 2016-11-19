@@ -44,7 +44,7 @@ public class ChatServer extends Thread {
     void broadcast(final String username, final String textMessage) throws IOException {
         System.out.println("Broadcasting => " + (makeMessage(username, textMessage)));
         for (ConnectedClient connectedClient : clients) {
-            connectedClient.sendMessage(makeMessage(username, textMessage));
+            connectedClient.sendTextMessage(makeMessage(username, textMessage));
         }
     }
 

@@ -4,15 +4,13 @@ import java.security.Key;
 
 public enum MessageType {
 
-    SIGNAL(0, Signal.class),
-    TEXT(1, String.class),
-    KEY(2, Key.class);
+    TEXT(String.class),
+    KEY(Key.class),
+    BYTES(Byte[].class);
 
     private final Class typeClass;
-    private final short value;
 
-    MessageType(final int value, final Class typeClass) {
-        this.value = (short) value;
+    MessageType(final Class typeClass) {
         this.typeClass = typeClass;
     }
 
@@ -21,11 +19,7 @@ public enum MessageType {
         return MessageType.values()[value];
     }
 
-    public Class getTypeClass() {
-        return typeClass;
-    }
-
     public short getValue() {
-        return value;
+        return (short) this.ordinal();
     }
 }
