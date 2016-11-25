@@ -4,6 +4,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 
@@ -23,7 +24,8 @@ public final class ChatClient {
     private final Socket serverSocket;
     private final ClientDisplay display;
     private final Credentials credentials;
-//    private final Key serverPublicKey;
+    private final Key desKey;
+    private Key serverPublicKey;
 
     public ChatClient(final String serverIp, final int port, final String username,
                       final ClientDisplay display) throws IOException,
@@ -36,9 +38,11 @@ public final class ChatClient {
         dataInputStream = new DataInputStream(serverSocket.getInputStream());
         dataOutputStream = new DataOutputStream(serverSocket.getOutputStream());
 
+
+        desKey = (Key) new MessageOperations().read(dataInputStream).getBody();
         new IncomingMessagesListener().start();
 
-        sendTextToServer("asD");
+        // sendTextToServer("asD");
 
         // Things to be sent to the server. Orders matters.
 //        sendTextToServer(username);
@@ -71,15 +75,22 @@ public final class ChatClient {
 //        byte[] encodedBytes = MessageOperations.encode(MessageType.TEXT, message);
 
         byte[] messageBytes = newMessage.getBytes();
-        byte[] encryptedMessageBytes = new DataCipher(EncryptionAlgorithm.DES).encrypt(messageBytes, Credentials.key);
+//        byte[] encryptedMessageBytes = messageBytes;
+        byte[] encryptedMessageBytes = new DataCipher(EncryptionAlgorithm.DES).encrypt(messageBytes, desKey);
+//        byte[] encryptedMessageBytes = new DataCipher(EncryptionAlgorithm.RSA).encrypt(messageBytes, Credentials.credentials.getPublicKey());
 
         byte[] encodedBytes = MessageOperations.encode(MessageType.BYTES, encryptedMessageBytes);
         new MessageOperations().send(encodedBytes, dataOutputStream);
     }
 
     private void messageReceived(final Message newMessage) throws IOException {
+        System.out.println("We got something...");
         byte[] encryptedMessageBytes = (byte[]) newMessage.getBody();
-        byte[] messageBytes = new DataCipher(EncryptionAlgorithm.DES).decrypt(encryptedMessageBytes, Credentials.key);
+//        System.out.println("We got something and bytes ...");
+//        byte[] messageBytes = encryptedMessageBytes;
+        byte[] messageBytes = new DataCipher(EncryptionAlgorithm.DES).decrypt(encryptedMessageBytes, desKey);
+//        System.out.println("We got something and bytes and decrypted ...");
+//        byte[] messageBytes = new DataCipher(EncryptionAlgorithm.RSA).decrypt(encryptedMessageBytes, Credentials.credentials.getPrivateKey());
 
         this.display.newMessage(new String(messageBytes));
     }

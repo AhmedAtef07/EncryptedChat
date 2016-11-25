@@ -4,6 +4,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 
@@ -17,7 +18,7 @@ class ConnectedClient extends Thread {
 
     private final DataInputStream dataInputStream;
     private final DataOutputStream dataOutputStream;
-//    private final Key publicKey;
+    private Key publicKey;
 
     public ConnectedClient(final Socket clientSocket, final ChatServer chatServer)
             throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
@@ -27,8 +28,11 @@ class ConnectedClient extends Thread {
         this.dataOutputStream = new DataOutputStream(clientSocket.getOutputStream());
 
         System.out.println("New connected client.");
-        start();
 
+        // Send the client the server DES key.
+        sendDesKey(chatServer.getDesKey());
+
+        start();
 //        sendMessage("ASD");
 
         // This is the first thing agreed with the client to send.
@@ -56,6 +60,11 @@ class ConnectedClient extends Thread {
 
     public void sendMessage(final byte[] data) throws IOException {
         byte[] encodedBytes = MessageOperations.encode(MessageType.BYTES, data);
+        new MessageOperations().send(encodedBytes, dataOutputStream);
+    }
+
+    public void sendDesKey(final Key key) throws IOException {
+        byte[] encodedBytes = MessageOperations.encode(MessageType.KEY, key);
         new MessageOperations().send(encodedBytes, dataOutputStream);
     }
 

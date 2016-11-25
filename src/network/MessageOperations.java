@@ -4,15 +4,13 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.security.InvalidKeyException;
 import java.security.Key;
-import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
-import java.security.spec.EncodedKeySpec;
 import java.security.spec.InvalidKeySpecException;
-import java.security.spec.X509EncodedKeySpec;
 
-import security.EncryptionAlgorithm;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.DESKeySpec;
 
 public class MessageOperations {
     private static final int HEADER_SIZE = 6;
@@ -59,10 +57,14 @@ public class MessageOperations {
                 String content = new String(contentBytes);
                 return new Message(messageType, content);
             case KEY:
-                EncodedKeySpec encodedKeySpec = new X509EncodedKeySpec(contentBytes);
-                PublicKey publicKey = KeyFactory.getInstance(EncryptionAlgorithm.RSA.toString())
-                        .generatePublic(encodedKeySpec);
-                return new Message(messageType, publicKey);
+                DESKeySpec encodedKeySpec = null;
+                try {
+                    encodedKeySpec = new DESKeySpec(contentBytes);
+                } catch (InvalidKeyException e) {
+                    e.printStackTrace();
+                }
+                Key key = SecretKeyFactory.getInstance("DES").generateSecret(encodedKeySpec);
+                return new Message(messageType, key);
             case BYTES:
                 return new Message(messageType, contentBytes);
             default:

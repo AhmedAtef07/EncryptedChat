@@ -4,6 +4,6 @@ public class CommandLineDisplay implements ClientDisplay {
 
     @Override
     public void newMessage(final String message) {
-        System.out.println(message);
+        System.out.println("## " + message);
     }
 }

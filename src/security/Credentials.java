@@ -12,18 +12,9 @@ import javax.crypto.SecretKey;
 
 /**
  * Host credentials.
+ * TODO: Split logic into symmetric and asymmetric key generation.
  */
 public class Credentials {
-
-    public static SecretKey key;
-
-    static {
-        try {
-            key = KeyGenerator.getInstance("DES").generateKey();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-    }
 
     private final KeyPair keyPair;
 
@@ -39,6 +30,14 @@ public class Credentials {
             keyPair = KeyPairGenerator.getInstance(encryptionAlgorithm.toString()).generateKeyPair();
         } catch (final NoSuchAlgorithmException e) {
             throw new IllegalArgumentException(e);
+        }
+    }
+
+    public static SecretKey generateDesKey() {
+        try {
+            return KeyGenerator.getInstance("DES").generateKey();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
         }
     }
 
