@@ -11,6 +11,7 @@ import network.Message;
 import network.MessageOperations;
 import network.MessageType;
 import security.Credentials;
+import security.DataCipher;
 import security.EncryptionAlgorithm;
 import user_interface.ClientDisplay;
 
@@ -68,12 +69,19 @@ public final class ChatClient {
     public void sendTextToServer(final String message) {
         String newMessage = String.format("%s: %s", username, message);
 //        byte[] encodedBytes = MessageOperations.encode(MessageType.TEXT, message);
-        byte[] encodedBytes = MessageOperations.encode(MessageType.BYTES, newMessage.getBytes());
+
+        byte[] messageBytes = newMessage.getBytes();
+        byte[] encryptedMessageBytes = new DataCipher(EncryptionAlgorithm.DES).encrypt(messageBytes, Credentials.key);
+
+        byte[] encodedBytes = MessageOperations.encode(MessageType.BYTES, encryptedMessageBytes);
         new MessageOperations().send(encodedBytes, dataOutputStream);
     }
 
     private void messageReceived(final Message newMessage) throws IOException {
-        this.display.newMessage(new String((byte[]) newMessage.getBody()));
+        byte[] encryptedMessageBytes = (byte[]) newMessage.getBody();
+        byte[] messageBytes = new DataCipher(EncryptionAlgorithm.DES).decrypt(encryptedMessageBytes, Credentials.key);
+
+        this.display.newMessage(new String(messageBytes));
     }
 
     private final class IncomingMessagesListener extends Thread {
