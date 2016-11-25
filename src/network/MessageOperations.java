@@ -72,14 +72,9 @@ public class MessageOperations {
         }
     }
 
-    public boolean send(final byte[] data, final DataOutputStream dataOutputStream) {
-        try {
-            dataOutputStream.write(data, 0, data.length);
-            dataOutputStream.flush();
-            return true;
-        } catch (IOException ex) {
-            ex.printStackTrace();
-            return false;
-        }
+    public void send(final byte[] data, final DataOutputStream dataOutputStream)
+            throws IOException {
+        dataOutputStream.write(data, 0, data.length);
+        dataOutputStream.flush();
     }
 }

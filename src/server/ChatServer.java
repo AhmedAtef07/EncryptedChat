@@ -3,9 +3,12 @@ package server;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.crypto.SecretKey;
 
@@ -35,6 +38,7 @@ public class ChatServer extends Thread {
             while (true) {
                 Socket clientSocket = server.accept();
                 ConnectedClient c = new ConnectedClient(clientSocket, this);
+                logConnectedClient(c);
                 clients.add(c);
             }
         } catch (Exception ex) {
@@ -49,10 +53,32 @@ public class ChatServer extends Thread {
         return desKey;
     }
 
-    void broadcast(final byte[] data) throws IOException {
-        System.out.println("Broadcasting => " + data.length);
+    void broadcast(final byte[] data) {
         for (ConnectedClient connectedClient : clients) {
-            connectedClient.sendMessage(data);
+            try {
+                connectedClient.sendMessage(data);
+            } catch (IOException e) {
+                // Stop sending this client any future messages.
+                logDisconnectedClient(connectedClient);
+                clients.remove(connectedClient);
+            }
         }
+    }
+
+    private void logConnectedClient(ConnectedClient connectedClient) {
+        System.out.println(String.format("New client connected with name [%s].",
+                connectedClient.getName()));
+    }
+
+    private void logDisconnectedClient(ConnectedClient connectedClient) {
+        System.out.println(String.format("Client [%s] is no longer reachable and was removed " +
+                "from the connected clients.", connectedClient.getName()));
+    }
+
+    public String getConnectedClientNames() {
+        List<String> connectedClientsNames = clients.stream()
+                .map(ConnectedClient::getName)
+                .collect(Collectors.toList());
+        return Arrays.toString(connectedClientsNames.toArray());
     }
 }

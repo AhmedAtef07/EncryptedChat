@@ -27,8 +27,6 @@ class ConnectedClient extends Thread {
         this.dataInputStream = new DataInputStream(clientSocket.getInputStream());
         this.dataOutputStream = new DataOutputStream(clientSocket.getOutputStream());
 
-        System.out.println("New connected client.");
-
         // Send the client the server DES key.
         sendDesKey(chatServer.getDesKey());
 
@@ -58,18 +56,21 @@ class ConnectedClient extends Thread {
         // Listen to any incoming messages on an external
     }
 
-    public void sendMessage(final byte[] data) throws IOException {
+    void sendMessage(final byte[] data) throws IOException {
         byte[] encodedBytes = MessageOperations.encode(MessageType.BYTES, data);
         new MessageOperations().send(encodedBytes, dataOutputStream);
     }
 
-    public void sendDesKey(final Key key) throws IOException {
+    void sendDesKey(final Key key) throws IOException {
         byte[] encodedBytes = MessageOperations.encode(MessageType.KEY, key);
         new MessageOperations().send(encodedBytes, dataOutputStream);
     }
 
     private void receiveMessage(final Message newMessage) throws IOException {
-        chatServer.broadcast((byte[]) newMessage.getBody());
+        byte[] messageBody = (byte[]) newMessage.getBody();
+        System.out.println(String.format("Client [%s] sent a message. Message body length = %s.",
+                this.getName(), messageBody.length));
+        chatServer.broadcast(messageBody);
     }
 
     @Override

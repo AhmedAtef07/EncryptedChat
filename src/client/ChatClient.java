@@ -70,7 +70,7 @@ public final class ChatClient {
 //        });
     }
 
-    public void sendTextToServer(final String message) {
+    public void sendTextToServer(final String message) throws IOException {
         String newMessage = String.format("%s: %s", username, message);
 //        byte[] encodedBytes = MessageOperations.encode(MessageType.TEXT, message);
 
