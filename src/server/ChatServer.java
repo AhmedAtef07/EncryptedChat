@@ -41,14 +41,10 @@ public class ChatServer extends Thread {
         return credentials;
     }
 
-    void broadcast(final String username, final String textMessage) throws IOException {
-        System.out.println("Broadcasting => " + (makeMessage(username, textMessage)));
+    void broadcast(final byte[] data) throws IOException {
+        System.out.println("Broadcasting => " + data.length);
         for (ConnectedClient connectedClient : clients) {
-            connectedClient.sendTextMessage(makeMessage(username, textMessage));
+            connectedClient.sendMessage(data);
         }
-    }
-
-    private String makeMessage(final String username, final String textMessage) {
-        return String.format("%s: %s", username, textMessage);
     }
 }

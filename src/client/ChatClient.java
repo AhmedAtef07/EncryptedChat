@@ -66,12 +66,14 @@ public final class ChatClient {
     }
 
     public void sendTextToServer(final String message) {
-        byte[] encodedBytes = MessageOperations.encode(MessageType.TEXT, message);
+        String newMessage = String.format("%s: %s", username, message);
+//        byte[] encodedBytes = MessageOperations.encode(MessageType.TEXT, message);
+        byte[] encodedBytes = MessageOperations.encode(MessageType.BYTES, newMessage.getBytes());
         new MessageOperations().send(encodedBytes, dataOutputStream);
     }
 
     private void messageReceived(final Message newMessage) throws IOException {
-        this.display.newMessage(newMessage.getBody().toString());
+        this.display.newMessage(new String((byte[]) newMessage.getBody()));
     }
 
     private final class IncomingMessagesListener extends Thread {

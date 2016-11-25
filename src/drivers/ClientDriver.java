@@ -18,9 +18,8 @@ public class ClientDriver {
             NoSuchAlgorithmException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-//        System.out.print("Insert a username: ");
-//        String username = br.readLine();
-        String username = "nmr el b7ar";
+        System.out.print("Insert a username: ");
+        String username = br.readLine();
 
 
         ChatClient chatClient = new ChatClient(IP, PORT, username, new CommandLineDisplay());

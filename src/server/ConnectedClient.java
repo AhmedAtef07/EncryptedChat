@@ -14,7 +14,6 @@ import network.MessageType;
 class ConnectedClient extends Thread {
 
     private final ChatServer chatServer;
-//    private final String username;
 
     private final DataInputStream dataInputStream;
     private final DataOutputStream dataOutputStream;
@@ -27,10 +26,10 @@ class ConnectedClient extends Thread {
         this.dataInputStream = new DataInputStream(clientSocket.getInputStream());
         this.dataOutputStream = new DataOutputStream(clientSocket.getOutputStream());
 
-        System.out.println("new connected client of username");
+        System.out.println("New connected client.");
         start();
 
-        sendTextMessage("ASD");
+//        sendMessage("ASD");
 
         // This is the first thing agreed with the client to send.
         // Receive client username.
@@ -49,27 +48,26 @@ class ConnectedClient extends Thread {
 //                .send(dataOutputStream);
 
         // Send an encrypted test message to the client.
-        // sendTextMessage(new String(
+        // sendMessage(new String(
         //        new DataCipher(EncryptionAlgorithm.RSA).encrypt("Data!!".getBytes(), publicKey)));
 
         // Listen to any incoming messages on an external
     }
 
-    public void sendTextMessage(final String message) throws IOException {
-        byte[] encodedBytes = MessageOperations.encode(MessageType.TEXT, message);
+    public void sendMessage(final byte[] data) throws IOException {
+        byte[] encodedBytes = MessageOperations.encode(MessageType.BYTES, data);
         new MessageOperations().send(encodedBytes, dataOutputStream);
     }
 
-    private void messageReceived(final Message newMessage) throws IOException {
-        System.out.println(newMessage.getBody().toString());
-        chatServer.broadcast("someone", newMessage.getBody().toString());
+    private void receiveMessage(final Message newMessage) throws IOException {
+        chatServer.broadcast((byte[]) newMessage.getBody());
     }
 
     @Override
     public void run() {
         try {
             while (true) {
-                messageReceived(new MessageOperations().read(dataInputStream));
+                receiveMessage(new MessageOperations().read(dataInputStream));
             }
         } catch (Exception ex) {
         }
